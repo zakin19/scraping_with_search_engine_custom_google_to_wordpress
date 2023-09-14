@@ -33,7 +33,7 @@ from nltk.tokenize import word_tokenize
 # PORTAL ARTIKEL
 
 api_key = 'AIzaSyA53D-8SCEcgSSXHJ_PJV8KhROpoCtZvZ8'
-api_key2 = 'AIzaSyDzQtl2AQJxpDPR26dWW_gcwFnTd--Dv8Q'
+# api_key2 = 'AIzaSyDzQtl2AQJxpDPR26dWW_gcwFnTd--Dv8Q'
 cx = 'd066eb327d49d406c'
 query = ['trends whatsapp ai', 'whatsapp ai features', 'whatsapp ai news',
          'ai on whatsapp', 'article whatsapp ai']  # list keyword
@@ -48,7 +48,7 @@ all_links = []
 
 for page in range(1, num_pages + 1):
     start = (page - 1) * 10 + 1
-    url = f"https://www.googleapis.com/customsearch/v1?key={api_key2}&cx={cx}&q={random_query}&start={start}"
+    url = f"https://www.googleapis.com/customsearch/v1?key={api_key}&cx={cx}&q={random_query}&start={start}"
 
     response = requests.get(url)
 
@@ -62,16 +62,21 @@ for page in range(1, num_pages + 1):
             f"Gagal melakukan permintaan API untuk halaman {page}: {response.status_code}")
         break  # Keluar dari loop jika ada kesalahan
 
-filter_link = [
-    url for url in all_links if "categories" not in url and "tags" not in url]
+excluded_keywords = ["categories", "tags", "https://www.timworks.com/ariana", "https://www.askjinni.ai/", "https://skolo-online.medium.com/chatgpt-now-on-whatsapp-your-personal-ai-assistant-506c5bda5b70",
+                     "https://getaipal.com/", "https://www.konverse.ai/", "https://www.socialmediatoday.com/"]
+
+# filter_link = [url for url in all_links if not any(keyword in url for keyword in excluded_keywords)]
+filter_link = [url for url in all_links if len(url) >= 31 and not any(
+    keyword in url for keyword in excluded_keywords)]
 
 print(random_query)
+
 # Sekarang, semua tautan tersimpan dalam variabel all_links
 for i in filter_link:
     print(i)
 
 # membuat penanda link
-file_path = 'loglinkSE.txt'
+file_path = 'loglinkwhatsappai.txt'
 
 
 def cek_url(url):
@@ -174,15 +179,21 @@ def full_scraping():
         print("Scraping gagal menjalankan ulang..")
         # Jika fungsi utama gagal, jalankan fungsi alternatif
         konten = scraping()
+        print("Hasil: ", konten)
     else:
         print("\nHasil awal: \n", konten)
         # print("Berhasil")
 
-    # definisi
-    hasil = konten[0]['content']
-    # token
-    tokens = word_tokenize(hasil)
-    jumlah_token = len(tokens)
+    # cek kondisi isi konten
+    if konten is None:
+        print("artikel tidak ada/sudah discrap semua")
+        return None
+    else:
+        # definisi
+        hasil = konten[0]['content']
+        # token
+        tokens = word_tokenize(hasil)
+        jumlah_token = len(tokens)
 
     for i in konten:
         link = i['link']
@@ -298,7 +309,8 @@ def full_scraping():
             engine="gpt-35-turbo",
             messages=[
                 {"role": "system", "content": "You are a machine proficient in classifying tags in an article. You can research an article and determine suitable tags."},
-                {"role": "user", "content": "Determine the tags for the following article : " +teks_to_tags+" {selected tags from this list based on corresponding article: ai, artificial intelligence, aplikasi chatbot penjualan, aplikasi chatbot online, bot whatsapp. if ai convert to [10,11], if artificial intelligence convert to [10,11], if kecerdasan buatan convert to [10,11], if chatbot or bot whatsapp or aplikasi penjualan online or aplikasi penjuakan chatbot convert to [41,42], else convert to []} you must print output with format list integer"}
+                {"role": "user", "content": "Determine the tags for the following article : " + teks_to_tags +
+                    " {selected tags from this list based on corresponding article: ai, artificial intelligence, aplikasi chatbot penjualan, aplikasi chatbot online, bot whatsapp. if ai convert to [10], if artificial intelligence convert to [11], if kecerdasan buatan convert to [10,11], if aplikasi chatbot online convert to [42], if aplikasi chatbot penjualan convert to [41], else convert to []} you must print output with format list integer"}
             ],
             temperature=0
         )
@@ -308,6 +320,7 @@ def full_scraping():
             full_scraping()
         else:
             tags = response['choices'][0]['message']['content']
+            print(tags)
             time.sleep(1)
 
         response = openai.ChatCompletion.create(
@@ -315,7 +328,7 @@ def full_scraping():
             messages=[
                 {"role": "system", "content": "Kamu adalah mesin yang dirancang untuk mahir memparafrasekan dan melakukan optimasi SEO pada artikel berbahasa Indonesia dengan profesional."},
                 {"role": "user", "content": "Tolong parafrase lalu lakukan optimasi SEO pada artikel berikut ini:\n" + konten3 +
-                    "\n\n dan gunakanlah bahasa Indonesia yang baik dan benar. \nJangan menulis penjelasan dan basa-basi apa pun selain dari isi artikel, serta hapus kalimat yang tidak berkaitan dengan isi artikel.\nBerikan output artikel yang telah diformat ulang saja, tidak perlu menyertakan artikel awal"}
+                    ".\n\nGunakanlah bahasa Indonesia yang baik dan benar. \nJangan menulis penjelasan dan basa-basi apa pun selain dari isi artikel, serta hapus kalimat yang tidak berkaitan dengan isi artikel.\nBerikan output artikel yang telah diformat ulang saja, tidak perlu menyertakan artikel awal"}
             ],
             temperature=0
         )
@@ -374,7 +387,7 @@ def full_scraping():
             if title_match:
                 title_text = title_match.group(1)
                 judul = title_text
-            else :
+            else:
                 post = artikel_post.split('\n')
                 judul = post[0]
 
@@ -512,8 +525,11 @@ def full_scraping():
         gambar = replicate()
         print("\nlink gambar : ", gambar[0])
 
-        username = 'admin'  # Replace with your WordPress username
-        password = 'UVZrdFVa6tV8Do)7M4'  # Replace with your WordPress password
+        # username = 'admin'  # Replace with your WordPress username
+        # password = 'UVZrdFVa6tV8Do)7M4'  # Replace with your WordPress password
+
+        username = 'luna'  # Replace with your WordPress username
+        password = '1tt75m&lEk4uHSJy6glMph8!'
 
         credentials = base64.b64encode(
             f"{username}:{password}".encode("utf-8")).decode("utf-8")
@@ -545,7 +561,9 @@ def full_scraping():
         # image_crop= response.json()
         # image_data = base64.b64decode(image_crop['data'])
         image_data = base64_string
-        endpoint_media = 'http://localhost/wordpress/index.php/wp-json/wp/v2/media'
+        # endpoint_media = 'http://localhost/wordpress/index.php/wp-json/wp/v2/media'
+        endpoint_media = 'https://blog.botika.online/wp-json/wp/v2/media'
+
         credentials = base64.b64encode(
             f"{username}:{password}".encode("utf-8")).decode("utf-8")
         headers = {"Authorization": f"Basic {credentials}"}
@@ -584,7 +602,7 @@ def full_scraping():
     except:
         tags = []
 
-    #ambil content tanpa title
+    # ambil content tanpa title
     post = artikel_post.split('\n')
     # title = post[0]
     content = ''.join(post[1:])
@@ -593,8 +611,8 @@ def full_scraping():
 
     def post():
         id_media = post_media()
-        endpoint = 'http://localhost/wordpress/index.php/wp-json/wp/v2/posts'
-        # link = 'https://blog.botika.online/wp-json/wp/v2/posts/'
+        # endpoint = 'http://localhost/wordpress/index.php/wp-json/wp/v2/posts'
+        endpoint = 'https://blog.botika.online/wp-json/wp/v2/posts/'
 
         headers = {'Content-Type': 'application/json'}
 
@@ -610,11 +628,11 @@ def full_scraping():
         print(data)
 
         # Define the username and password for Basic Auth
-        username = 'admin'  # Replace with your WordPress username
-        password = 'UVZrdFVa6tV8Do)7M4'  # Replace with your WordPress password
+        # username = 'admin'  # Replace with your WordPress username
+        # password = 'UVZrdFVa6tV8Do)7M4'  # Replace with your WordPress password
 
-        #     username = 'luna'  # Replace with your WordPress username
-        #     password = '1tt75m&lEk4uHSJy6glMph8!'
+        username = 'luna'  # Replace with your WordPress username
+        password = '1tt75m&lEk4uHSJy6glMph8!'
 
         credentials = base64.b64encode(
             f"{username}:{password}".encode("utf-8")).decode("utf-8")

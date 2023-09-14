@@ -63,18 +63,19 @@ for page in range(1, num_pages + 1):
         break  # Keluar dari loop jika ada kesalahan
 
 excluded_keywords = ["categories", "tags", "https://www.timworks.com/ariana", "https://www.askjinni.ai/",
-                     "https://getaipal.com/", "https://www.konverse.ai/", "https://www.socialmediatoday.com/"]
+                     "https://getaipal.com/", "https://www.konverse.ai/", "https://www.socialmediatoday.com/", "https://skolo-online.medium.com/chatgpt-now-on-whatsapp-your-personal-ai-assistant-506c5bda5b70"]
 
-filter_link = [url for url in all_links if not any(
+# filter_link = [url for url in all_links if not any(keyword in url for keyword in excluded_keywords)]
+filter_link = [url for url in all_links if len(url) >= 31 and not any(
     keyword in url for keyword in excluded_keywords)]
 
 print(random_query)
 # Sekarang, semua tautan tersimpan dalam variabel all_links
 for i in filter_link:
     print(i)
-
+print(len(filter_link))
 # membuat penanda link
-file_path = 'loglinkSE.txt'
+file_path = 'loglinkwhatsappai.txt'
 
 
 def cek_url(url):
