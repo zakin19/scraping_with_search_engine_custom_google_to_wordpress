@@ -33,10 +33,10 @@ from nltk.tokenize import word_tokenize
 # PORTAL ARTIKEL
 
 api_key = 'AIzaSyA53D-8SCEcgSSXHJ_PJV8KhROpoCtZvZ8'
-# api_key2 = 'AIzaSyDzQtl2AQJxpDPR26dWW_gcwFnTd--Dv8Q'
+api_key2 = 'AIzaSyDzQtl2AQJxpDPR26dWW_gcwFnTd--Dv8Q'
 cx = 'd066eb327d49d406c'
 query = ['trends whatsapp ai', 'whatsapp ai features', 'whatsapp ai news',
-         'ai on whatsapp', 'whatsapp ai article']  # list keyword
+         'ai on whatsapp', 'article whatsapp ai']  # list keyword
 num_results = 20  # Jumlah total hasil yang Anda inginkan
 random_query = random.choice(query)
 
@@ -48,7 +48,7 @@ all_links = []
 
 for page in range(1, num_pages + 1):
     start = (page - 1) * 10 + 1
-    url = f"https://www.googleapis.com/customsearch/v1?key={api_key}&cx={cx}&q={random_query}&start={start}"
+    url = f"https://www.googleapis.com/customsearch/v1?key={api_key2}&cx={cx}&q={random_query}&start={start}"
 
     response = requests.get(url)
 
