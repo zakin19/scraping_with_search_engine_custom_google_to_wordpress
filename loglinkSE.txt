@@ -57,3 +57,6 @@ https://www.vonage.com/communications-apis/messages/features/whatsapp/
 https://www.xda-developers.com/whatsapp-ai-stickers/
 https://botscrew.com/blog/a-step-by-step-guide-to-create-chatbot-for-whatsapp-for-business/
 https://myoperator.com/blog/the-future-of-whatsapp-business
+https://www.engati.com/blog/create-whatsapp-chatbot
+https://topai.tools/s/WhatsApp-AI-chatbot
+https://www.vice.com/en/article/m7bv9n/i-let-chatgpt-answer-my-texts

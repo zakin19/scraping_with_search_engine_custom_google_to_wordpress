@@ -62,8 +62,11 @@ for page in range(1, num_pages + 1):
             f"Gagal melakukan permintaan API untuk halaman {page}: {response.status_code}")
         break  # Keluar dari loop jika ada kesalahan
 
-filter_link = [
-    url for url in all_links if "categories" not in url and "tags" not in url]
+excluded_keywords = ["categories", "tags", "https://www.timworks.com/ariana", "https://www.askjinni.ai/",
+                     "https://getaipal.com/", "https://www.konverse.ai/", "https://www.socialmediatoday.com/"]
+
+filter_link = [url for url in all_links if not any(
+    keyword in url for keyword in excluded_keywords)]
 
 print(random_query)
 # Sekarang, semua tautan tersimpan dalam variabel all_links
@@ -174,15 +177,21 @@ def full_scraping():
         print("Scraping gagal menjalankan ulang..")
         # Jika fungsi utama gagal, jalankan fungsi alternatif
         konten = scraping()
+        print("Hasil : ", konten)
     else:
         print("\nHasil awal: \n", konten)
         # print("Berhasil")
 
-    # definisi
-    hasil = konten[0]['content']
-    # token
-    tokens = word_tokenize(hasil)
-    jumlah_token = len(tokens)
+    # cek kondisi isi konten
+    if konten is None:
+        print("artikel tidak ada/sudah discrap semua")
+        return None
+    else:
+        # definisi
+        hasil = konten[0]['content']
+        # token
+        tokens = word_tokenize(hasil)
+        jumlah_token = len(tokens)
 
     for i in konten:
         link = i['link']
@@ -316,7 +325,7 @@ def full_scraping():
             messages=[
                 {"role": "system", "content": "Kamu adalah mesin yang dirancang untuk mahir memparafrasekan dan melakukan optimasi SEO pada artikel berbahasa Indonesia dengan profesional."},
                 {"role": "user", "content": "Tolong parafrase lalu lakukan optimasi SEO pada artikel berikut ini:\n" + konten3 +
-                    "\n\n dan gunakanlah bahasa Indonesia yang baik dan benar. \nJangan menulis penjelasan dan basa-basi apa pun selain dari isi artikel, serta hapus kalimat yang tidak berkaitan dengan isi artikel.\nBerikan output artikel yang telah diformat ulang saja, tidak perlu menyertakan artikel awal"}
+                    "\n\ngunakanlah bahasa Indonesia yang baik dan benar.\nJangan menulis penjelasan dan basa-basi apa pun selain dari isi artikel, serta hapus kalimat yang tidak berkaitan dengan isi artikel.\nBerikan output artikel yang telah diformat ulang saja, tidak perlu menyertakan artikel awal"}
             ],
             temperature=0
         )
@@ -335,7 +344,7 @@ def full_scraping():
                 {"role": "system",
                     "content": "Kamu adalah mesin editor artikel profesional."},
                 {"role": "user", "content": "Tolong edit artikel berikut :\n" + SEO +
-                    "\ntambahkan tags <u> dan tags <b> untuk semua istilah asing (selain bahasa indonesia) yang kamu temui. \n\nMohon dipastikan penggunaan bahasa Indonesia yang baik dan benar. \nJangan menulis penjelasan apa pun dan basa-basi apa pun. Tolong artikel yang telah diformat ulang menggunakan format ini: <title>judul artikel</title> <h1>Headline dari isi artikel(buatlah 1 kalimat topik dari artikel yang isinya berbeda dengan judul artikel)</h1> <p>isi artikel selain judul dan headline</p>"}
+                    "\ntambahkan tags <u> <b> untuk semua istilah asing (selain bahasa indonesia) yang kamu temui. \n\nMohon dipastikan penggunaan bahasa Indonesia yang baik dan benar. \nJangan menulis penjelasan apa pun dan basa-basi apa pun. Tolong artikel yang telah diformat ulang menggunakan format ini: <title>judul artikel</title> <h1>Headline dari isi artikel(buatlah 1 kalimat topik dari artikel yang isinya berbeda dengan judul artikel)</h1> <p>isi artikel selain judul dan headline</p>"}
             ],
             temperature=0
         )
@@ -375,6 +384,9 @@ def full_scraping():
             if title_match:
                 title_text = title_match.group(1)
                 judul = title_text
+            else:
+                post = artikel_post.split('\n')
+                judul = post[0]
 
             # post = artikel_post.split('\n')
             # title = post[0]
@@ -582,8 +594,9 @@ def full_scraping():
     except:
         tags = []
 
+    # ambil content tanpa title
     post = artikel_post.split('\n')
-    title = post[0]
+    # title = post[0]
     content = ''.join(post[1:])
 
     print(tags)

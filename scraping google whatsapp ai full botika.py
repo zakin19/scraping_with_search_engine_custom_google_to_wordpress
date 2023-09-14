@@ -297,9 +297,8 @@ def full_scraping():
         response = openai.ChatCompletion.create(
             engine="gpt-35-turbo",
             messages=[
-                {"role": "system", "content": "Kamu adalah seorang ahli mesin dalam mengklasifikasikan tag dalam sebuah artikel. Anda dapat meneliti artikel dan menentukan tag yang sesuai."},
-                {"role": "user", "content": "Tentukan tag untuk artikel berikut :" + teks_to_tags +
-                    "{selected tags from this list based on corresponding article: Omnichannel Customer Service, Omnichannel, Customer Service. if Omnichannel Customer Services convert to [2], if Omnichannel convert to [4], if Customer Service convert to [3], else convert to []} you must print output with format list integer"}
+                {"role": "system", "content": "You are a machine proficient in classifying tags in an article. You can research an article and determine suitable tags."},
+                {"role": "user", "content": "Determine the tags for the following article : " +teks_to_tags+" {selected tags from this list based on corresponding article: ai, artificial intelligence, aplikasi chatbot penjualan, aplikasi chatbot online, bot whatsapp. if ai convert to [10,11], if artificial intelligence convert to [10,11], if kecerdasan buatan convert to [10,11], if chatbot or bot whatsapp or aplikasi penjualan online or aplikasi penjuakan chatbot convert to [41,42], else convert to []} you must print output with format list integer"}
             ],
             temperature=0
         )
@@ -375,10 +374,9 @@ def full_scraping():
             if title_match:
                 title_text = title_match.group(1)
                 judul = title_text
-
-            # post = artikel_post.split('\n')
-            # title = post[0]
-            # content = ''.join(post[1:])
+            else :
+                post = artikel_post.split('\n')
+                judul = post[0]
 
         return tags, judul, artikel_post
 
@@ -565,25 +563,30 @@ def full_scraping():
         return id_media
 
     try:
-        if 'Omnichannel Customer Service' in tags:
-            index = tags.index('Omnichannel Customer Service')
-            tags[index] = 2
+        if 'ai' in tags:
+            index = tags.index('ai')
+            tags[index] = 10
 
-        if 'Omnichannel' in tags:
-            index = tags.index('Omnichannel')
-            tags[index] = 4
+        if 'artificialintelligence' in tags:
+            index = tags.index('artificialintelligence')
+            tags[index] = 11
 
-        if 'Customer Service' in tags:
-            index = tags.index('Customer Service')
-            tags[index] = 3
+        if 'aplikasi chatbot online' in tags:
+            index = tags.index('aplikasi chatbot online')
+            tags[index] = 42
+
+        if 'aplikasi chatbot penjualan' in tags:
+            index = tags.index('aplikasi chatbot penjualan')
+            tags[index] = 41
 
         tags = ast.literal_eval(tags)
 
     except:
         tags = []
 
+    #ambil content tanpa title
     post = artikel_post.split('\n')
-    title = post[0]
+    # title = post[0]
     content = ''.join(post[1:])
 
     print(tags)
@@ -600,7 +603,7 @@ def full_scraping():
             "featured_media": id_media['id'],
             "content": content,
             "status": "draft",
-            "categories": 9,
+            "categories": 106,
             "tags": tags
         }
 

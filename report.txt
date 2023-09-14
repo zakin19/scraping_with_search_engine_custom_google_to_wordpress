@@ -1,0 +1,7 @@
+laporan dari aku :
+untuk task scrapingnya sudah selesai mbak
+
+1. untuk kendala keyword kemarin sudah teratasi dengan menggunakan keyword ['trends whatsapp ai', 'whatsapp ai features', 'whatsapp ai news','ai on whatsapp', 'whatsapp ai article']. list dipilih menggunakan random choice
+2. kondisi jika response gpt 'content_filter' juga sudah, dengan menyimpan url ke log penanda kemudian mengulang program dari awal
+3. Tinggal menyesuaikan id tags & categories sesuai di botika
+4. Hasil scrapnya menurutku cukup bagus, aku kasih salah satu contohnya dibawah
