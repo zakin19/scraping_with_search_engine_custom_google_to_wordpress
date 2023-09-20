@@ -500,8 +500,8 @@ def full_scraping():
             return None
 
     # PROSES REPLICATE
-    def replicate():
-        import replicate
+    def gen_replicate():
+        # import replicate
         processed_text = check_and_process_text(hasil)
 
         if processed_text is not None:
@@ -522,7 +522,7 @@ def full_scraping():
 
     # POST MEDIA
     def post_media():
-        gambar = replicate()
+        gambar = gen_replicate()
         print("\nlink gambar : ", gambar[0])
 
         # username = 'admin'  # Replace with your WordPress username

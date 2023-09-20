@@ -35,9 +35,9 @@ from nltk.tokenize import word_tokenize
 api_key = 'AIzaSyA53D-8SCEcgSSXHJ_PJV8KhROpoCtZvZ8'
 # api_key2 = 'AIzaSyDzQtl2AQJxpDPR26dWW_gcwFnTd--Dv8Q'
 cx = 'd066eb327d49d406c'
-query = ['trends whatsapp ai', 'whatsapp ai features', 'whatsapp ai news',
-         'ai on whatsapp', 'whatsapp ai article']  # list keyword
-num_results = 20  # Jumlah total hasil yang Anda inginkan
+query = ['trends whatsapp ai', 'whatsapp ai features',
+         'whatsapp ai news', 'whatsapp ai article']  # list keyword
+num_results = 30  # Jumlah total hasil yang Anda inginkan
 random_query = random.choice(query)
 
 # Hitung jumlah halaman yang diperlukan
@@ -62,7 +62,7 @@ for page in range(1, num_pages + 1):
             f"Gagal melakukan permintaan API untuk halaman {page}: {response.status_code}")
         break  # Keluar dari loop jika ada kesalahan
 
-excluded_keywords = ["categories", "tags", "https://www.timworks.com/ariana", "https://www.askjinni.ai/",
+excluded_keywords = ["categories", "tags", "https://www.timworks.com/ariana", "https://www.askjinni.ai/", "https://www.engati.com/blog/create-whatsapp-chatbot", "https://codecanyon.net/", "https://myoperator.com/",
                      "https://getaipal.com/", "https://www.konverse.ai/", "https://www.socialmediatoday.com/", "https://skolo-online.medium.com/chatgpt-now-on-whatsapp-your-personal-ai-assistant-506c5bda5b70"]
 
 # filter_link = [url for url in all_links if not any(keyword in url for keyword in excluded_keywords)]
@@ -149,7 +149,7 @@ def full_scraping():
                     saveurls(url)
                     return None  # Mengembalikan None dalam kasus kesalahan
 
-                if 2000 < len(paragraf) < 20000:
+                if 2500 < len(paragraf) < 20000:
 
                     scraping = {'link': url,
                                 'content': paragraf}
@@ -180,7 +180,7 @@ def full_scraping():
         konten = scraping()
         print("Hasil : ", konten)
     else:
-        print("\nHasil awal: \n", konten)
+        print("\nHasil scrap: \n", konten)
         # print("Berhasil")
 
     # cek kondisi isi konten
@@ -196,9 +196,9 @@ def full_scraping():
 
     for i in konten:
         link = i['link']
-    print(link)
+    print('\nlink artikel', link)
 
-    print("\n", hasil)
+    print('artikel awal:\n', hasil)
 
     # CHECKING ARTICLE
     # Fungsi untuk menghitung panjang string menggunakan tokenizer
@@ -259,9 +259,9 @@ def full_scraping():
     print("\npanjang token : ", panjang_teks)
 
     # Memeriksa panjang teks dan menjalankan fungsi yang sesuai
-    if panjang_teks > 3000:
+    if panjang_teks > 2500:
         #     process_long_text(hasil)
-        print("Teks lebih dari 3000 token:")
+        print("Teks lebih dari 2500 token:")
 
         jumlah_token = len(token)
 
@@ -290,8 +290,8 @@ def full_scraping():
         response = openai.ChatCompletion.create(
             engine="gpt-35-turbo",
             messages=[
-                {"role": "system", "content": "Kamu adalah mesin pengedit artikel yang handal, kamu mampu memisahkan artikel dari kalimat yang tidak diperlukan, seperti : penulis, author, footer, catatan kaki, sumber, promosi, iklan, daftar isi, dan kalimat yang tidak sesuai dengan isi artikel."},
-                {"role": "user", "content": "lakukan penyuntingan pada artikel berikut : \n" + konten2 + "\n ambil isi artikel saja dan hapus kalimat yang tidak diperlukan, gunakanlah bahasa indonesia yang benar"}],
+                {"role": "system", "content": "Kamu adalah mesin pengedit artikel yang handal, kamu mampu memisahkan artikel dari kalimat yang tidak diperlukan."},
+                {"role": "user", "content": "lakukan penyuntingan pada artikel berikut : \n" + konten2 + "\n ambil isi artikel saja dan hapus kalimat yang tidak diperlukan,  seperti : penulis, author, footer, catatan kaki, sumber, promosi, iklan, daftar isi, dan kalimat yang tidak sesuai dengan isi artikel, pastikan menggunakan bahasa indonesia yang benar"}],
             temperature=0
         )
         if response["choices"][0]["finish_reason"] == "content_filter":
@@ -325,7 +325,7 @@ def full_scraping():
             engine="gpt-35-turbo",
             messages=[
                 {"role": "system", "content": "Kamu adalah mesin yang dirancang untuk mahir memparafrasekan dan melakukan optimasi SEO pada artikel berbahasa Indonesia dengan profesional."},
-                {"role": "user", "content": "Tolong parafrase lalu lakukan optimasi SEO pada artikel berikut ini:\n" + konten3 +
+                {"role": "user", "content": "Tolong parafrase kemudian lakukan optimasi SEO menggunakan gaya penulis profesional forbes atau The New York Times pada artikel berikut ini:\n" + konten3 +
                     "\n\ngunakanlah bahasa Indonesia yang baik dan benar.\nJangan menulis penjelasan dan basa-basi apa pun selain dari isi artikel, serta hapus kalimat yang tidak berkaitan dengan isi artikel.\nBerikan output artikel yang telah diformat ulang saja, tidak perlu menyertakan artikel awal"}
             ],
             temperature=0
@@ -345,7 +345,7 @@ def full_scraping():
                 {"role": "system",
                     "content": "Kamu adalah mesin editor artikel profesional."},
                 {"role": "user", "content": "Tolong edit artikel berikut :\n" + SEO +
-                    "\ntambahkan tags <u> <b> untuk semua istilah asing (selain bahasa indonesia) yang kamu temui. \n\nMohon dipastikan penggunaan bahasa Indonesia yang baik dan benar. \nJangan menulis penjelasan apa pun dan basa-basi apa pun. Tolong artikel yang telah diformat ulang menggunakan format ini: <title>judul artikel</title> <h1>Headline dari isi artikel(buatlah 1 kalimat topik dari artikel yang isinya berbeda dengan judul artikel)</h1> <p>isi artikel selain judul dan headline</p>"}
+                    "\n\ntambahkan bold tags <b> dan underline tags <u> untuk semua istilah asing (selain bahasa indonesia) yang kamu temui, berikut salah satu contohnya : <b><u>chatbot<u/><b/>. \n\nMohon dipastikan penggunaan bahasa Indonesia yang baik dan benar. \nJangan menulis penjelasan apa pun dan basa-basi apa pun. Tolong artikel yang telah diformat ulang menggunakan format ini: <title>judul artikel</title> <h1>Headline dari isi artikel(buatlah 1 kalimat topik dari artikel yang isinya berbeda dengan judul artikel)</h1> <p>isi artikel selain judul dan headline</p>"}
             ],
             temperature=0
         )
@@ -364,7 +364,7 @@ def full_scraping():
             messages=[
                 {"role": "system",
                     "content": "Kamu adalah mesin editor artikel profesional."},
-                {"role": "user", "content": "lakukan penyuntingan artikel yang saya berikan :\n" + "\n" + font_formatted + "\nsunting artikel di atas dengan menambahkan annotations terhadap kata-kata pada artikel diatas yang mengandung keyword \"ai\", \"omnichannel\", dan \"chatbot\" untuk diformat menjadi link pada struktur html dengan ketentuan sebagai berikut:\n- Jika 'ai', maka link terhubung ke https://botika.online/\n- Jika 'chatbot', link terhubung ke https://botika.online/chatbot-gpt/index.php\n- Jika 'omnichannel', link terhubung ke https://omni.botika.online/\nFormatnya harus seperti ini: <a href=\"{link}\">{keyword}</a>. JANGAN MENAMBAHKAN APAPUN JIKA KATA TERSEBUT TIDAK ADA DALAM ARTIKEL"}
+                {"role": "user", "content": "lakukan penyuntingan artikel yang saya berikan :\n" + "\n" + font_formatted + "\nsunting artikel di atas dengan menambahkan annotations terhadap kata-kata pada artikel diatas yang mengandung keyword \"ai\", \"omnichannel\", dan \"chatbot\" untuk diformat menjadi link pada struktur html dengan ketentuan sebagai berikut:\n- Jika 'ai', maka link terhubung ke https://botika.online/\n- Jika 'chatbot', link terhubung ke https://botika.online/chatbot-gpt/index.php\n- Jika 'omnichannel', link terhubung ke https://omni.botika.online/\nFormatnya harus seperti ini: <a href=\"{link}\">{keyword}</a>. JANGAN MENAMBAHKAN APAPUN JIKA KATA TERSEBUT TIDAK ADA DALAM ARTIKEL DAN JANGAN MENGHAPUS TAGS YANG SUDAH ADA"}
             ],
             temperature=0
         )
@@ -452,18 +452,19 @@ def full_scraping():
     #         break
     # Jika keluar dari perulangan, berarti hasilnya bukan "Please provide a description"
     # print("\nHasil gen prompt image :", hasil)
+    def run_genimg():
+        for i in range(5):  # Melakukan maksimal 5 percobaan
+            hasil = gen_img()
+        # Lakukan sesuatu yang mungkin mengalami keberhasilan
+            if "Please provide a description" not in hasil:  # Ganti dengan logika yang sesuai
+                break  # Keluar dari perulangan jika berhasil
+            else:
+                print("Percobaan ke-", i+1,
+                      "Hasil tidak sesuai: Teks mengandung 'please provide a description'")
 
-    for i in range(5):  # Melakukan maksimal 5 percobaan
-        hasil = gen_img()
-    # Lakukan sesuatu yang mungkin mengalami keberhasilan
-        if "Please provide a description" not in hasil:  # Ganti dengan logika yang sesuai
-            break  # Keluar dari perulangan jika berhasil
-        else:
-            print("Percobaan ke-", i+1,
-                  "Hasil tidak sesuai: Teks mengandung 'please provide a description'")
-
-    # Ini akan dicetak setelah berhasil atau setelah 5 percobaan
-    print("\nHasil gen prompt image : ", hasil)
+        # Ini akan dicetak setelah berhasil atau setelah 5 percobaan
+        print("\nHasil gen prompt image : ", hasil)
+        return hasil
 
     # CEK HASIL PROMPT GEN IMAGE
     def check_and_process_text(text):
@@ -502,31 +503,62 @@ def full_scraping():
             return None
 
     # PROSES REPLICATE
-    def replicate():
-        import replicate
+    def gen_replicate():
+        # import replicate
+        hasil = run_genimg()
         processed_text = check_and_process_text(hasil)
 
         if processed_text is not None:
             print("\njudul hasil prompt:", processed_text)
 
-        api_token = "r8_FAZbfP3qs1tNSikquiNmyCw5jh9ph3b3B5tS1"
-        client = replicate.Client(api_token=api_token)
-        output = client.run(
-            "stability-ai/sdxl:a00d0b7dcbb9c3fbb34ba87d2d5b46c56969c84a628bf778a7fdaec30b1b99c5",
-            input={"prompt": 'Phantasmal iridescent, vibrant color, high contrast, award winning, trending in artstation, digital art, ' + processed_text,
-                   "width": 1648,
-                   "height": 1024,
-                   "seed": 1234}
-        )
-        gambar = output
-        # gambar = ['https://pbxt.replicate.delivery/KGWKIv78I5aQA59gGST9djCu7eSx2126LBTqxcXhwpmsyjxIA/out-0.png']
+        # api_token = "r8_20mFBK0UWRlhrAxNRgwxie0OZwKZby73GuwYp"
+        # # api_token = "r8_FAZbfP3qs1tNSikquiNmyCw5jh9ph3b3B5tS1"
+        # os.environ["REPLICATE_API_TOKEN"] = api_token
+        # model = replicate.models.get("stability-ai/sdxl")
+        # version = model.versions.get(
+        #     "a00d0b7dcbb9c3fbb34ba87d2d5b46c56969c84a628bf778a7fdaec30b1b99c5")
+        # prediction = replicate.predictions.create(
+        #     version=version,
+        #     input={"prompt": 'Phantasmal iridescent, vibrant color, high contrast, award winning, trending in artstation, digital art,' + processed_text,
+        #            "negative_prompt": "nsfw, ugly, disfigured, deformed",
+        #            "width": 1648,
+        #            "height": 1024,
+        #            "seed": 1234}
+        # )
+
+        # prediction.reload()
+
+        # max_attempts = 3
+        # attempts = 0
+
+        # while attempts < max_attempts and prediction.status != 'succeeded':
+
+        #     if prediction.status == 'processing' or prediction.status == 'starting':
+        #         prediction.wait()
+        #     elif prediction.status == 'failed':
+        #         prediction.reload()
+
+        #     print(prediction.status)
+        #     attempts += 1
+
+        # if prediction.status == 'succeeded':
+        #     gambar = prediction.output[0]
+        #     print(gambar)
+        # else:
+        #     print('gagal dalam 3x percobaan')
+        #     print(prediction.error)
+        #     if attempts < max_attempts:
+        #         gen_replicate()
+        #     else:
+        #         saveurls(link)
+        #         full_scraping()
+
+        gambar = 'https://pbxt.replicate.delivery/KGWKIv78I5aQA59gGST9djCu7eSx2126LBTqxcXhwpmsyjxIA/out-0.png'
         return gambar
 
     # POST MEDIA
     def post_media():
-        gambar = replicate()
-        print("\nlink gambar : ", gambar[0])
-
+        gambar = gen_replicate()
         username = 'admin'  # Replace with your WordPress username
         password = 'UVZrdFVa6tV8Do)7M4'  # Replace with your WordPress password
 
@@ -535,7 +567,7 @@ def full_scraping():
         headers = {"Authorization": f"Basic {credentials}"}
 
         # proses crop & post
-        image_url = gambar[0]
+        image_url = gambar
         response = requests.get(image_url)
         # image_base64 = base64.b64encode(response.content).decode('utf-8')
         image_base64 = base64.b64encode(response.content)
@@ -589,11 +621,12 @@ def full_scraping():
         if 'Customer Service' in tags:
             index = tags.index('Customer Service')
             tags[index] = 3
-
-        tags = ast.literal_eval(tags)
-
+        try:
+            tags = ast.literal_eval(tags)
+        except:
+            tags = tags
     except:
-        tags = []
+        tags = [2,4]
 
     # ambil content tanpa title
     post = artikel_post.split('\n')
