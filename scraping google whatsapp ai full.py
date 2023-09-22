@@ -470,9 +470,10 @@ def full_scraping():
     def check_and_process_text(text):
         if "Please provide a description" in text:
             print("Hasil tidak sesuai: Teks mengandung 'please provide a description'")
-            saveurls(link)
-            print("ulangi...")
-            full_scraping()
+            # saveurls(link)
+            # print("ulangi...")
+            # full_scraping()
+            return None
 
         pattern = r"1\.(.*?)2\."
         # jika antara 1 dan 2
@@ -510,6 +511,10 @@ def full_scraping():
 
         if processed_text is not None:
             print("\njudul hasil prompt:", processed_text)
+
+        else:
+            processed_text = random.choice(["Imagine A futuristic digital landscape where AI chatbots float like holograms, each in their designated customer service booth. The atmosphere is serene, glowing in pastel blues and purples, representing the trust and efficiency of these machines. A digital river flows through the middle, symbolizing the rapid advancement of technology.", "Imagine A bustling city street where people walk with holographic AI chatbot companions by their side. Each bot assists with real-time queries, showcasing a harmonious blend of humans and advanced AI. Golden rays from a setting sun cast long shadows, painting a picture of a world where technology and humanity coexist in trust", "Imagine a Inside an ultra-modern customer service center, walls are adorned with flowing digital patterns. AI chatbots, designed as floating orbs of light, attend to customers with issues, offering instant solutions. In the background, a massive screen displays the phrase 'Advancing Trust', reflecting society's growing confidence in AI capabilities.", "Imagine A sprawling digital cityscape at dusk, neon signs everywhere bearing various AI chatbot logos. The sky, instead of stars, displays streaming lines of code. Human silhouettes move about, engaged in conversation with holographic chatbots",
+                                           "Imagine A futuristic city street where human citizens roam around, their every whim catered to by sleek robotic chatbots hovering beside them. The humans are lounging on self-moving chairs, sipping drinks handed to them by bots, while other bots whisper the latest news or jokes in their ears. The colors are a mix of neon blues and purples, representing the digital world of AI, contrasted against the natural green of plants that have become rare. The mood is one of relaxation and dependence, with the central focus being a young child looking curiously at an old-fashioned manual typewriter in a forgotten corner, symbolizing a past era.", "Imagine A visual split of two worlds. On one side, a black and white representation of humans from yesteryears, reading newspapers, playing physical games, and engaging in face-to-face conversations. The other half is vibrant and colorful, showcasing humans deeply engrossed in holographic displays, voice-controlled devices, and AI chatbots that morph to fit any service need – from chefs to personal trainers. The split symbolizes the stark difference between the two eras, with an elderly figure bridging the two sides, looking bemused at a chatbot trying to assist him."])
 
         # api_token = "r8_20mFBK0UWRlhrAxNRgwxie0OZwKZby73GuwYp"
         # # api_token = "r8_FAZbfP3qs1tNSikquiNmyCw5jh9ph3b3B5tS1"
@@ -626,7 +631,7 @@ def full_scraping():
         except:
             tags = tags
     except:
-        tags = [2,4]
+        tags = [2, 4]
 
     # ambil content tanpa title
     post = artikel_post.split('\n')
