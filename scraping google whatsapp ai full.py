@@ -39,7 +39,6 @@ query = ['trends whatsapp ai', 'whatsapp ai features',
          'whatsapp ai news', 'whatsapp ai article']  # list keyword
 num_results = 30  # Jumlah total hasil yang Anda inginkan
 random_query = random.choice(query)
-
 # Hitung jumlah halaman yang diperlukan
 num_pages = (num_results + 9) // 10  # Pembagian bulat ke atas
 
@@ -247,7 +246,7 @@ def full_scraping():
                 translate = response['choices'][0]['message']['content']
                 all_konten1.append(translate)
                 time.sleep(5)
-                print("\nHasil translate 2 split : \n")
+                print("\nHasil translate 3 split : \n")
                 print(all_konten1)
                 return all_konten1
 
@@ -265,12 +264,13 @@ def full_scraping():
 
         jumlah_token = len(token)
 
-        # Membagi string menjadi dua bagian dengan jumlah token yang sama
-        bagian1 = " ".join(token[:jumlah_token // 2])
-        bagian2 = " ".join(token[jumlah_token // 2:])
+        # Membagi string menjadi tiga bagian dengan jumlah token yang sama
+        bagian1 = " ".join(token[:jumlah_token // 3])
+        bagian2 = " ".join(token[jumlah_token // 3: 2 * (jumlah_token // 3)])
+        bagian3 = " ".join(token[2 * (jumlah_token // 3):])
 
         # Menyimpan hasil pemecahan kembali dalam variabel 'content'
-        hasil = [bagian1, bagian2]
+        hasil = [bagian1, bagian2, bagian3]
         prompt = hasil
         # Cetak hasilnya
     #     print(prompt)
@@ -309,7 +309,7 @@ def full_scraping():
             messages=[
                 {"role": "system", "content": "Kamu adalah seorang ahli mesin dalam mengklasifikasikan tag dalam sebuah artikel. Anda dapat meneliti artikel dan menentukan tag yang sesuai."},
                 {"role": "user", "content": "Tentukan tag untuk artikel berikut :" + teks_to_tags +
-                    "{selected tags from this list based on corresponding article: Omnichannel Customer Service, Omnichannel, Customer Service. if Omnichannel Customer Services convert to [2], if Omnichannel convert to [4], if Customer Service convert to [3], else convert to []} you must print output with format list integer"}
+                    "{selected tags from this list based on corresponding article: Omnichannel Customer Service, Omnichannel, Customer Service. if Omnichannel Customer Services convert to [3], if Omnichannel convert to [4], if Customer Service convert to [5], else convert to []} you must print output with format list integer"}
             ],
             temperature=0
         )
@@ -325,8 +325,8 @@ def full_scraping():
             engine="gpt-35-turbo",
             messages=[
                 {"role": "system", "content": "Kamu adalah mesin yang dirancang untuk mahir memparafrasekan dan melakukan optimasi SEO pada artikel berbahasa Indonesia dengan profesional."},
-                {"role": "user", "content": "Tolong parafrase kemudian lakukan optimasi SEO menggunakan gaya penulis profesional forbes atau The New York Times pada artikel berikut ini:\n" + konten3 +
-                    "\n\ngunakanlah bahasa Indonesia yang baik dan benar.\nJangan menulis penjelasan dan basa-basi apa pun selain dari isi artikel, serta hapus kalimat yang tidak berkaitan dengan isi artikel.\nBerikan output artikel yang telah diformat ulang saja, tidak perlu menyertakan artikel awal"}
+                {"role": "user", "content": "Tolong parafrase kemudian lakukan optimasi SEO menggunakan gaya penulisan profesional forbes atau The New York Times pada artikel berikut ini:\n" + konten3 +
+                    "\n\nJangan menulis penjelasan dan basa-basi apa pun selain dari isi artikel, gunakanlah bahasa indonesia yang baik dan benar serta hapus kalimat yang tidak berkaitan dengan isi artikel.\nBerikan output artikel yang telah diformat ulang saja, tidak perlu menyertakan artikel awal"}
             ],
             temperature=0
         )
@@ -388,14 +388,31 @@ def full_scraping():
             else:
                 post = artikel_post.split('\n')
                 judul = post[0]
+        # make english title
+        response = openai.ChatCompletion.create(
+            engine="gpt-35-turbo",
+            messages=[
+                {"role": "system",
+                    "content": "Kamu adalah mesin penerjemah kedalam bahasa inggris yang handal."},
+                {"role": "user", "content": "terjemahkan kalimat berikut kedalam bahasa inggris : "+judul}
+            ],
+            temperature=0
+        )
+
+        if response["choices"][0]["finish_reason"] == "content_filter":
+            title_eng = judul
+        else:
+            title_eng = response['choices'][0]['message']['content']
+            time.sleep(2)
 
             # post = artikel_post.split('\n')
             # title = post[0]
             # content = ''.join(post[1:])
 
-        return tags, judul, artikel_post
+        return tags, judul, artikel_post, title_eng
 
-    tags, judul, artikel_post = full_gpt()
+    tags, judul, artikel_post, title_eng = full_gpt()
+    print("judul midjourney: ", title_eng)
 
     # GENERATE PROMPT REPLICATE
     def gen_img():
@@ -433,7 +450,7 @@ def full_scraping():
 
         [Start MPGM]"""},
                 {"role": "assistant", "content": "[MPGM] Midjourney Prompt Generator Mode activated. [MPGM] User input options:\n1. [prompt] followed by a description of the image to be generated.\n2. [pX] to select a prompt from the generated options.\n3. [next] to generate a new set of prompts based on the last [prompt] provided.\n4. [good] or [bad] to provide feedback on the generated image.\n5. [change] to describe changes you want to make to the generated image.\n6. [End MPGM] to terminate Midjourney Prompt Generator Mode.\n\n[help] Options:\n- [prompt] followed by a description of the image to be generated, this description is taken from the news title.\n- [End MPGM] to terminate Midjourney Prompt Generator Mode."},
-                {"role": "user", "content": f"[prompt] "+judul}
+                {"role": "user", "content": f"[prompt] "+title_eng}
             ], temperature=0.2
         )
 
@@ -463,47 +480,102 @@ def full_scraping():
                       "Hasil tidak sesuai: Teks mengandung 'please provide a description'")
 
         # Ini akan dicetak setelah berhasil atau setelah 5 percobaan
-        print("\nHasil gen prompt image : ", hasil)
+        # print("\nHasil gen prompt image : ", hasil)
+        print("\nhasil gen image: ", hasil)
         return hasil
 
     # CEK HASIL PROMPT GEN IMAGE
     def check_and_process_text(text):
+        # pilih acak prompt
+        random_prompt = random.choice([1, 2, 3])
+        # random_prompt = 3
         if "Please provide a description" in text:
             print("Hasil tidak sesuai: Teks mengandung 'please provide a description'")
-            # saveurls(link)
-            # print("ulangi...")
-            # full_scraping()
             return None
+        if random_prompt == 1:
+            print("\n(prompt 1 dipilih)")
+            pattern = r"1\.(.*?)2\."
+            matches = re.findall(pattern, text, re.DOTALL)
+            result = re.search(r'Prompt 1:(.*?)Prompt 2:', text, re.DOTALL)
 
-        pattern = r"1\.(.*?)2\."
-        # jika antara 1 dan 2
-        matches = re.findall(pattern, text, re.DOTALL)
-        # jika antara prompt 1 dan prompt 2
-        result = re.search(r'Prompt 1:(.*?)Prompt 2:', text, re.DOTALL)
+            if matches:
+                extracted_text = matches[0].strip()
+                extracted_text = re.sub(r'Prompt:', '', extracted_text)
+                extracted_text = re.sub(r'Prompt 1:', '', extracted_text)
+                extracted_text = re.sub(r'\[p1\]', '', extracted_text)
+                extracted_text = re.sub(
+                    r'Image Description:', '', extracted_text)
+                extracted_text = re.sub(
+                    r'Choose this prompt by entering [p1].', '', extracted_text)
+                return extracted_text
+            elif result:
+                string_antara_prompt1_dan_prompt2 = result.group(1).strip()
+                string_antara_prompt1_dan_prompt2 = re.sub(
+                    r'Image Description:', '', string_antara_prompt1_dan_prompt2)
+                string_antara_prompt1_dan_prompt2 = re.sub(
+                    r'Choose this prompt by entering [p1].', '', string_antara_prompt1_dan_prompt2)
+                return string_antara_prompt1_dan_prompt2
+            else:
+                print("Hasil tidak sesuai: Tidak ditemukan")
+                return None
+        elif random_prompt == 2:
+            print("\n(prompt 2 dipilih)")
+            pattern = r"2\.(.*?)3\."
+            matches = re.findall(pattern, text, re.DOTALL)
+            result = re.search(r'Prompt 2:(.*?)Prompt 3:', text, re.DOTALL)
 
-        if matches:
-            extracted_text = matches[0].strip()
-            extracted_text = re.sub(r'Prompt:', '', extracted_text)
-            extracted_text = re.sub(r'Prompt 1:', '', extracted_text)
-            extracted_text = re.sub(r'\[p1\]', '', extracted_text)
-            extracted_text = re.sub(r'Image Description:', '', extracted_text)
-            extracted_text = re.sub(
-                r'Choose this prompt by entering [p1].', '', extracted_text)
-            # print("1")
-            return extracted_text
-        elif result:
-            string_antara_prompt1_dan_prompt2 = result.group(1).strip()
-            string_antara_prompt1_dan_prompt2 = re.sub(
-                r'Image Description:', '', string_antara_prompt1_dan_prompt2)
-            string_antara_prompt1_dan_prompt2 = re.sub(
-                r'Choose this prompt by entering [p1].', '', string_antara_prompt1_dan_prompt2)
-            # print("2")
-            return string_antara_prompt1_dan_prompt2
+            if matches:
+                extracted_text = matches[0].strip()
+                extracted_text = re.sub(r'Prompt:', '', extracted_text)
+                extracted_text = re.sub(r'Prompt 2:', '', extracted_text)
+                extracted_text = re.sub(r'\[p2\]', '', extracted_text)
+                extracted_text = re.sub(
+                    r'Image Description:', '', extracted_text)
+                extracted_text = re.sub(
+                    r'Choose this prompt by entering [p2].', '', extracted_text)
+                return extracted_text
+            elif result:
+                string_antara_prompt2_dan_prompt3 = result.group(1).strip()
+                string_antara_prompt2_dan_prompt3 = re.sub(
+                    r'Image Description:', '', string_antara_prompt2_dan_prompt3)
+                string_antara_prompt2_dan_prompt3 = re.sub(
+                    r'Choose this prompt by entering [p2].', '', string_antara_prompt2_dan_prompt3)
+                return string_antara_prompt2_dan_prompt3
+            else:
+                print("Hasil tidak sesuai: Tidak ditemukan")
+                return None
         else:
-            print("Hasil tidak sesuai: Tidak ditemukan teks antara '1.' dan '2.'")
-            return None
+            print("\n(prompt 3 dipilih)")
+            result = re.search(r'3.(.*?)\n\n', text, re.DOTALL)
+            matches = re.search(r'Prompt 3:(.*?)\n\n', text, re.DOTALL)
 
+            if matches:
+                extracted_text = matches[0].strip()
+                extracted_text = re.sub(r'Prompt:', '', extracted_text)
+                extracted_text = re.sub(r'Prompt 3:', '', extracted_text)
+                extracted_text = re.sub(r'\[p3\]', '', extracted_text)
+                extracted_text = re.sub(
+                    r'Image Description:', '', extracted_text)
+                extracted_text = re.sub(
+                    r'Choose this prompt by entering [p3].', '', extracted_text)
+                # print("1")
+                return extracted_text
+            elif result:
+                string3 = result.group(1).strip()
+                string3 = re.sub(r'Prompt:', '', string3)
+                string3 = re.sub(r'Prompt 3:', '', string3)
+                string3 = re.sub(r'\[p3\]', '', string3)
+                string3 = re.sub(
+                    r'Image Description:', '', string3)
+                string3 = re.sub(
+                    r'Choose this prompt by entering [p3].', '', string3)
+                # print("2")
+                return string3
+            else:
+                print("Hasil tidak sesuai: Tidak ditemukan")
+                return None
     # PROSES REPLICATE
+
     def gen_replicate():
         # import replicate
         hasil = run_genimg()
@@ -513,52 +585,51 @@ def full_scraping():
             print("\njudul hasil prompt:", processed_text)
 
         else:
-            processed_text = random.choice(["Imagine A futuristic digital landscape where AI chatbots float like holograms, each in their designated customer service booth. The atmosphere is serene, glowing in pastel blues and purples, representing the trust and efficiency of these machines. A digital river flows through the middle, symbolizing the rapid advancement of technology.", "Imagine A bustling city street where people walk with holographic AI chatbot companions by their side. Each bot assists with real-time queries, showcasing a harmonious blend of humans and advanced AI. Golden rays from a setting sun cast long shadows, painting a picture of a world where technology and humanity coexist in trust", "Imagine a Inside an ultra-modern customer service center, walls are adorned with flowing digital patterns. AI chatbots, designed as floating orbs of light, attend to customers with issues, offering instant solutions. In the background, a massive screen displays the phrase 'Advancing Trust', reflecting society's growing confidence in AI capabilities.", "Imagine A sprawling digital cityscape at dusk, neon signs everywhere bearing various AI chatbot logos. The sky, instead of stars, displays streaming lines of code. Human silhouettes move about, engaged in conversation with holographic chatbots",
-                                           "Imagine A futuristic city street where human citizens roam around, their every whim catered to by sleek robotic chatbots hovering beside them. The humans are lounging on self-moving chairs, sipping drinks handed to them by bots, while other bots whisper the latest news or jokes in their ears. The colors are a mix of neon blues and purples, representing the digital world of AI, contrasted against the natural green of plants that have become rare. The mood is one of relaxation and dependence, with the central focus being a young child looking curiously at an old-fashioned manual typewriter in a forgotten corner, symbolizing a past era.", "Imagine A visual split of two worlds. On one side, a black and white representation of humans from yesteryears, reading newspapers, playing physical games, and engaging in face-to-face conversations. The other half is vibrant and colorful, showcasing humans deeply engrossed in holographic displays, voice-controlled devices, and AI chatbots that morph to fit any service need – from chefs to personal trainers. The split symbolizes the stark difference between the two eras, with an elderly figure bridging the two sides, looking bemused at a chatbot trying to assist him."])
+            processed_text = random.choice(["In a futuristic boardroom, executives from various tech companies gather around a holographic conference table. A lifelike AI avatar, representing the advancements in AI technology, stands at the head of the table, confidently leading the discussion. Charts and graphs float in the air, illustrating the remarkable progress of AI in the tech industry.", "Inside a high-tech research facility, a team of dedicated scientists and engineers are gathered around a colossal, transparent AI figure. This figure stands at the center of a pristine, futuristic laboratory, radiating a soft, ethereal light. Its body is a complex network of intricate neural pathways, circuits, and shimmering data streams, representing the cutting-edge development of artificial intelligence technology.", "A vibrant marketplace teeming with activity. Stalls and storefronts are adorned with WhatsApp logos, indicating businesses using the platform. Customers and shop owners engage in lively conversations through WhatsApp. Colorful speech bubbles and emojis fill the air, creating an atmosphere of seamless and delightful communication.", "Inside a virtual realm, a surreal landscape unfolds. Gigantic smartphone screens float in the sky like celestial bodies. Each screen represents a different business, and they are interconnected by a web of glowing pathways. Customers and business representatives interact on these screens, using WhatsApp's cutting-edge features. The scene symbolizes the limitless possibilities of business-customer interactions in the digital age.", "Picture an artist's studio filled with cutting-edge technology. The walls are adorned with large screens displaying mesmerizing generative AI artworks in progress. The artist, wearing a virtual reality headset, is immersed in a digital world, sculpting and painting with virtual tools. The room is filled with a sense of innovation and experimentation, as the artist explores the endless possibilities of generative AI technology.",
+                                           "A bustling tech lab is alive with activity. Engineers and researchers work on AI algorithms that optimize creative processes. Enormous screens display AI-generated music compositions, intricate architectural designs, and innovative product concepts. The lab buzzes with excitement as AI continues to unlock new levels of creativity, revolutionizing the way products and features are developed.", "Imagine a vibrant and dynamic image that showcases the integration of ChatGPT into WhatsApp. The composition features a smartphone screen displaying a WhatsApp conversation between two people. The conversation is enhanced by artificial intelligence, represented by colorful lines and patterns flowing out of the chat bubbles. The background shows a modern and sleek office environment, symbolizing the technological advancements behind this integration. The lighting is soft and evenly distributed, creating a warm and inviting atmosphere. The colors are predominantly blue and green, representing the familiar WhatsApp branding, with pops of vibrant colors to highlight the AI elements. The mood is energetic and optimistic, reflecting the potential of AI to enhance conversations and make them more engaging.", "Visualize an image that captures the seamless integration of ChatGPT into WhatsApp. The composition features a smartphone held by a person's hand, with the WhatsApp interface displayed on the screen. The chat bubbles are filled with AI-generated responses, represented by a futuristic font and style. The background is a blend of technology-related elements, such as circuit patterns and binary code, symbolizing the AI capabilities at work. The lighting is soft, with a gentle glow emanating from the smartphone screen, creating a sense of focus on the conversation. The colors are a combination of WhatsApp's signature green and white, with hints of metallic tones to convey a modern and cutting-edge feel. The mood is professional yet approachable, highlighting the potential of AI to enhance conversations in various contexts.", "In a sleek, modern conference room at Meta Platforms Inc., the walls are adorned with large digital screens displaying intricate algorithms and neural networks. The room is filled with Meta's staff, all eagerly gathered around a central table. On the table sits a state-of-the-art AI tool, its design reflecting the company's futuristic aesthetic. The tool's interface showcases stunning visualizations of data and complex AI models, captivating everyone's attention. The room is bathed in soft, ambient lighting, creating an atmosphere of anticipation and excitement."])
 
-        # api_token = "r8_20mFBK0UWRlhrAxNRgwxie0OZwKZby73GuwYp"
-        # # api_token = "r8_FAZbfP3qs1tNSikquiNmyCw5jh9ph3b3B5tS1"
-        # os.environ["REPLICATE_API_TOKEN"] = api_token
-        # model = replicate.models.get("stability-ai/sdxl")
-        # version = model.versions.get(
-        #     "a00d0b7dcbb9c3fbb34ba87d2d5b46c56969c84a628bf778a7fdaec30b1b99c5")
-        # prediction = replicate.predictions.create(
-        #     version=version,
-        #     input={"prompt": 'Phantasmal iridescent, vibrant color, high contrast, award winning, trending in artstation, digital art,' + processed_text,
-        #            "negative_prompt": "nsfw, ugly, disfigured, deformed",
-        #            "width": 1648,
-        #            "height": 1024,
-        #            "seed": 1234}
-        # )
+        api_token = "r8_a6NqGehWeH8AQGT2V5yOuxXHjYna6wI1IOP51"
+        # api_token = "r8_FAZbfP3qs1tNSikquiNmyCw5jh9ph3b3B5tS1"
+        os.environ["REPLICATE_API_TOKEN"] = api_token
+        model = replicate.models.get("stability-ai/sdxl")
+        version = model.versions.get(
+            "a00d0b7dcbb9c3fbb34ba87d2d5b46c56969c84a628bf778a7fdaec30b1b99c5")
+        prediction = replicate.predictions.create(
+            version=version,
+            input={"prompt": 'Phantasmal iridescent, vibrant color, high contrast, award winning, trending in artstation, digital art,' + processed_text,
+                   "negative_prompt": "nsfw, ugly, disfigured, deformed",
+                   "width": 1648,
+                   "height": 1024,
+                   "seed": 1234}
+        )
 
-        # prediction.reload()
+        prediction.reload()
 
-        # max_attempts = 3
-        # attempts = 0
+        max_attempts = 3
+        attempts = 0
 
-        # while attempts < max_attempts and prediction.status != 'succeeded':
+        while attempts < max_attempts and prediction.status != 'succeeded':
 
-        #     if prediction.status == 'processing' or prediction.status == 'starting':
-        #         prediction.wait()
-        #     elif prediction.status == 'failed':
-        #         prediction.reload()
+            if prediction.status == 'processing' or prediction.status == 'starting':
+                prediction.wait()
+            elif prediction.status == 'failed':
+                prediction.reload()
 
-        #     print(prediction.status)
-        #     attempts += 1
+            print(prediction.status)
+            attempts += 1
 
-        # if prediction.status == 'succeeded':
-        #     gambar = prediction.output[0]
-        #     print(gambar)
-        # else:
-        #     print('gagal dalam 3x percobaan')
-        #     print(prediction.error)
-        #     if attempts < max_attempts:
-        #         gen_replicate()
-        #     else:
-        #         saveurls(link)
-        #         full_scraping()
-
-        gambar = 'https://pbxt.replicate.delivery/KGWKIv78I5aQA59gGST9djCu7eSx2126LBTqxcXhwpmsyjxIA/out-0.png'
+        if prediction.status == 'succeeded':
+            gambar = prediction.output[0]
+            print(gambar)
+        else:
+            print('gagal dalam 3x percobaan')
+            print(prediction.error)
+            if attempts < max_attempts:
+                gen_replicate()
+            else:
+                saveurls(link)
+                full_scraping()
+        # gambar = 'https://pbxt.replicate.delivery/KGWKIv78I5aQA59gGST9djCu7eSx2126LBTqxcXhwpmsyjxIA/out-0.png'
         return gambar
 
     # POST MEDIA
@@ -615,23 +686,26 @@ def full_scraping():
         return id_media
 
     try:
-        if 'Omnichannel Customer Service' in tags:
-            index = tags.index('Omnichannel Customer Service')
-            tags[index] = 2
-
-        if 'Omnichannel' in tags:
-            index = tags.index('Omnichannel')
-            tags[index] = 4
-
-        if 'Customer Service' in tags:
-            index = tags.index('Customer Service')
-            tags[index] = 3
-        try:
+        if str(type(tags)) == "<class 'str'>":
+            if 'tags' in tags:
+                tags = tags.replace('tags', '')
             tags = ast.literal_eval(tags)
-        except:
-            tags = tags
+
+        if str(type(tags)) == "<class 'list'>":
+
+            if 'Omnichannel Customer Service' in tags:
+                index = tags.index('Omnichannel Customer Service')
+                tags[index] = 3
+
+            if 'Omnichannel' in tags:
+                index = tags.index('Omnichannel')
+                tags[index] = 4
+
+            if 'Customer Service' in tags:
+                index = tags.index('Customer Service')
+                tags[index] = 5
     except:
-        tags = [2, 4]
+        tags = [3, 4]
 
     # ambil content tanpa title
     post = artikel_post.split('\n')
@@ -651,8 +725,8 @@ def full_scraping():
             "title": judul,
             "featured_media": id_media['id'],
             "content": content,
-            "status": "draft",
-            "categories": 9,
+            "status": "publish",
+            "categories": 2,
             "tags": tags
         }
 
